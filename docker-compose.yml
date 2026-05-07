@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: cat_breeder
+      POSTGRES_USER: breeder
+      POSTGRES_PASSWORD: breeder123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn backend.breeder_project.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: your-secret-key
+      DEBUG: "True"
+      DB_NAME: cat_breeder
+      DB_USER: breeder
+      DB_PASSWORD: breeder123
+      DB_HOST: db
+      DB_PORT: 5432
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

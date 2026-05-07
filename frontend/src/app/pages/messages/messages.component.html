@@ -1,0 +1,13 @@
+<h2>Messages</h2>
+
+<input [(ngModel)]="senderId" type="number" placeholder="Sender ID">
+<br>
+<textarea [(ngModel)]="text" placeholder="Message"></textarea>
+<br>
+<button (click)="send()">Send</button>
+
+<hr>
+
+<div *ngFor="let msg of messages">
+  <b>{{ msg.sender_username || msg.sender_id }}</b>: {{ msg.text }}
+</div>

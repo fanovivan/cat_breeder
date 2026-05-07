@@ -7,10 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool, default=False)
 
-ALLOWED_HOSTS = config(
-    'ALLOWED_HOSTS',
-    default='localhost,127.0.0.1',
-).split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,9 +22,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
 
-    'breeders',
-    'cats',
-    'messages_ws',
+    'backend.breeders.apps.BreedersConfig',
+    'backend.cats.apps.CatsConfig',
+    'backend.messages_ws.apps.MessagesWsConfig',
 ]
 
 MIDDLEWARE = [
@@ -41,7 +38,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'breeder_project.urls'
+ROOT_URLCONF = 'backend.breeder_project.urls'
 
 TEMPLATES = [
     {
@@ -59,17 +56,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'breeder_project.wsgi.application'
-ASGI_APPLICATION = 'breeder_project.asgi.application'
+WSGI_APPLICATION = 'backend.breeder_project.wsgi.application'
+ASGI_APPLICATION = 'backend.breeder_project.asgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='127.0.0.1'),
-        'PORT': config('DB_PORT', default='5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -123,11 +116,12 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+            'hosts': [('redis', 6379)],
         },
     },
 }

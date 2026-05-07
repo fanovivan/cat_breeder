@@ -1,0 +1,20 @@
+<h2>Cats</h2>
+
+<div>
+  <input [(ngModel)]="newCat.name" placeholder="Name">
+  <input [(ngModel)]="newCat.age" type="number" placeholder="Age">
+  <input [(ngModel)]="newCat.breed" type="number" placeholder="Breed ID">
+  <select [(ngModel)]="newCat.hairiness">
+    <option value="short">Short</option>
+    <option value="medium">Medium</option>
+    <option value="long">Long</option>
+  </select>
+  <button (click)="addCat()">Add cat</button>
+</div>
+
+<hr>
+
+<div *ngFor="let cat of cats">
+  <b>{{ cat.name }}</b> | age: {{ cat.age }} | hairiness: {{ cat.hairiness }}
+  <button (click)="deleteCat(cat.id)">Delete</button>
+</div>
