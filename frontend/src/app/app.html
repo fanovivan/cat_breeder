@@ -1,8 +1,12 @@
-<nav style="display:flex; gap:12px; padding:12px; border-bottom:1px solid #ddd;">
-  <a routerLink="/login">Login</a>
-  <a routerLink="/register">Register</a>
-  <a routerLink="/cats">Cats</a>
-  <a routerLink="/messages">Messages</a>
+<nav style="display:flex; gap:12px; padding:12px; border-bottom:1px solid #ddd; align-items:center;">
+  @if (!loggedIn) {
+    <a routerLink="/login">Вход</a>
+    <a routerLink="/register">Регистрация</a>
+  } @else {
+    <a routerLink="/cats">Коты</a>
+    <a routerLink="/messages">Сообщения</a>
+    <button type="button" (click)="logout()">Выйти</button>
+  }
 </nav>
 
 <router-outlet></router-outlet>

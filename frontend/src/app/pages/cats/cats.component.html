@@ -1,20 +1,65 @@
-<h2>Cats</h2>
+<h2>Мои коты</h2>
 
 <div>
-  <input [(ngModel)]="newCat.name" placeholder="Name">
-  <input [(ngModel)]="newCat.age" type="number" placeholder="Age">
-  <input [(ngModel)]="newCat.breed" type="number" placeholder="Breed ID">
-  <select [(ngModel)]="newCat.hairiness">
-    <option value="short">Short</option>
-    <option value="medium">Medium</option>
-    <option value="long">Long</option>
+  <input [(ngModel)]="newCat.name" placeholder="Имя" />
+  <input [(ngModel)]="newCat.age" type="number" min="0" placeholder="Возраст" />
+  <select [(ngModel)]="newCat.breed">
+    <option [ngValue]="null">Порода не указана</option>
+    <option *ngFor="let b of breeds" [ngValue]="b.id">{{ b.name }}</option>
   </select>
-  <button (click)="addCat()">Add cat</button>
+  <select [(ngModel)]="newCat.hairiness">
+    <option value="short">Короткая шерсть</option>
+    <option value="medium">Средняя</option>
+    <option value="long">Длинная</option>
+  </select>
+  <button type="button" (click)="addCat()">Добавить кота</button>
 </div>
 
-<hr>
+<hr />
 
-<div *ngFor="let cat of cats">
-  <b>{{ cat.name }}</b> | age: {{ cat.age }} | hairiness: {{ cat.hairiness }}
-  <button (click)="deleteCat(cat.id)">Delete</button>
-</div>
+<table style="border-collapse: collapse; width: 100%">
+  <thead>
+    <tr>
+      <th style="text-align: left">Имя</th>
+      <th>Возраст</th>
+      <th>Порода</th>
+      <th>Волосатость</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngFor="let cat of cats">
+      <tr *ngIf="editingId !== cat.id">
+        <td>{{ cat.name }}</td>
+        <td>{{ cat.age }}</td>
+        <td>{{ breedName(cat.breed) }}</td>
+        <td>{{ cat.hairiness }}</td>
+        <td style="white-space: nowrap">
+          <button type="button" (click)="startEdit(cat)">Изменить</button>
+          <button type="button" (click)="deleteCat(cat.id)">Удалить</button>
+        </td>
+      </tr>
+      <tr *ngIf="editingId === cat.id">
+        <td><input [(ngModel)]="editDraft.name" /></td>
+        <td><input [(ngModel)]="editDraft.age" type="number" min="0" /></td>
+        <td>
+          <select [(ngModel)]="editDraft.breed">
+            <option [ngValue]="null">—</option>
+            <option *ngFor="let b of breeds" [ngValue]="b.id">{{ b.name }}</option>
+          </select>
+        </td>
+        <td>
+          <select [(ngModel)]="editDraft.hairiness">
+            <option value="short">short</option>
+            <option value="medium">medium</option>
+            <option value="long">long</option>
+          </select>
+        </td>
+        <td>
+          <button type="button" (click)="saveEdit(cat.id)">Сохранить</button>
+          <button type="button" (click)="cancelEdit()">Отмена</button>
+        </td>
+      </tr>
+    </ng-container>
+  </tbody>
+</table>

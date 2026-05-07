@@ -1,2 +1,33 @@
 /.vscode
 /venv
+
+# Секреты и локальная конфигурация
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Django
+*.log
+/db.sqlite3
+/staticfiles/
+
+# Frontend
+node_modules/
+/frontend/dist/
+
+# IDE/OS
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

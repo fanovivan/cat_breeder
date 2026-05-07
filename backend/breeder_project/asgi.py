@@ -1,18 +1,21 @@
 import os
 
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.breeder_project.settings')
+from backend.breeder_project.jwt_websocket_middleware import JWTWebsocketMiddleware
+from backend.breeder_project import routing as ws_routing
 
-django_asgi_app = get_asgi_application()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.breeder_project.settings")
 
-import backend.breeder_project.routing as routing
+django_application = get_asgi_application()
 
-application = ProtocolTypeRouter({
-    'http': django_asgi_app,
-    'websocket': AuthMiddlewareStack(
-        URLRouter(routing.websocket_urlpatterns)
-    ),
-})
+application = ProtocolTypeRouter(
+    {
+        "http": django_application,
+        "websocket": AllowedHostsOriginValidator(
+            JWTWebsocketMiddleware(URLRouter(ws_routing.websocket_urlpatterns))
+        ),
+    }
+)

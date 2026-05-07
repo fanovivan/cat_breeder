@@ -1,13 +1,13 @@
-<h2>Messages</h2>
+<h2>Сообщения заводчиков</h2>
+<p>Сообщения уходят в общий канал через WebSocket; история доступна через REST.</p>
 
-<input [(ngModel)]="senderId" type="number" placeholder="Sender ID">
-<br>
-<textarea [(ngModel)]="text" placeholder="Message"></textarea>
-<br>
-<button (click)="send()">Send</button>
+<textarea [(ngModel)]="text" rows="3" placeholder="Текст сообщения" style="width:100%;max-width:480px;"></textarea>
+<div style="margin-top:8px;">
+  <button type="button" (click)="send()">Отправить</button>
+</div>
 
-<hr>
+<hr />
 
-<div *ngFor="let msg of messages">
-  <b>{{ msg.sender_username || msg.sender_id }}</b>: {{ msg.text }}
+<div *ngFor="let msg of messages" style="margin-bottom:6px;">
+  <b>{{ msg.sender_username || ('#' + msg.sender_id) }}</b>: {{ msg.text }}
 </div>

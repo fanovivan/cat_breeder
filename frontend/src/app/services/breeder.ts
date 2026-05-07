@@ -9,23 +9,28 @@ export interface RegisterData {
   email?: string;
 }
 
+export interface TokenResponse {
+  access: string;
+  refresh: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class BreederService {
-  private baseUrl = 'http://localhost:8000/api';
+  private readonly api = '/api';
 
   constructor(private http: HttpClient) {}
 
-  register(data: RegisterData): Observable<any> {
-    return this.http.post(`${this.baseUrl}/register/`, data);
+  register(data: RegisterData): Observable<unknown> {
+    return this.http.post(`${this.api}/auth/register/`, data);
   }
 
-  login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/token/`, { username, password });
+  login(username: string, password: string): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${this.api}/token/`, { username, password });
   }
 
-  refresh(refresh: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/token/refresh/`, { refresh });
+  refresh(refresh: string): Observable<TokenResponse> {
+    return this.http.post<TokenResponse>(`${this.api}/token/refresh/`, { refresh });
   }
 }

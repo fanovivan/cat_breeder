@@ -9,13 +9,14 @@ export interface Cat {
   breed: number | null;
   hairiness: string;
   breeder?: number;
+  breeder_username?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CatService {
-  private baseUrl = 'http://localhost:8000/api/cats/';
+  private readonly baseUrl = '/api/cats/';
 
   constructor(private http: HttpClient) {}
 

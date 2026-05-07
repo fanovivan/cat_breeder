@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { BreederService } from '../../services/breeder';
 
 @Component({
@@ -15,16 +16,23 @@ export class RegisterComponent {
   email = '';
   result = '';
 
-  constructor(private breederService: BreederService) {}
+  constructor(
+    private breederService: BreederService,
+    private router: Router
+  ) {}
 
   register(): void {
-    this.breederService.register({
-      username: this.username,
-      password: this.password,
-      email: this.email
-    }).subscribe({
-      next: (data) => this.result = JSON.stringify(data),
-      error: (err) => this.result = err.error ? JSON.stringify(err.error) : 'Register error'
-    });
+    this.result = '';
+    this.breederService
+      .register({
+        username: this.username,
+        password: this.password,
+        email: this.email
+      })
+      .subscribe({
+        next: () => void this.router.navigate(['/login']),
+        error: (err) =>
+          (this.result = err.error ? JSON.stringify(err.error) : 'Ошибка регистрации')
+      });
   }
 }

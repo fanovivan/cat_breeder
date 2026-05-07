@@ -1,7 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WebsocketService, ChatMessage } from '../../services/websocket';
+import { Subscription } from 'rxjs';
+import { WebsocketService, ChatPayload } from '../../services/websocket';
+import { MessageService, MessageRecord } from '../../services/message.service';
 
 @Component({
   selector: 'app-messages',
@@ -10,26 +12,39 @@ import { WebsocketService, ChatMessage } from '../../services/websocket';
   templateUrl: './messages.component.html'
 })
 export class MessagesComponent implements OnInit, OnDestroy {
-  senderId = 1;
   text = '';
-  messages: ChatMessage[] = [];
+  messages: ChatPayload[] = [];
+  private sub?: Subscription;
 
-  constructor(private ws: WebsocketService) {}
+  constructor(
+    private ws: WebsocketService,
+    private messageApi: MessageService
+  ) {}
 
   ngOnInit(): void {
+    this.messageApi.list().subscribe((rows) => {
+      this.messages = rows.map((r) => ({
+        text: r.text,
+        sender_id: r.sender,
+        sender_username: r.sender_username
+      }));
+    });
+
     this.ws.connect();
-    this.ws.messages().subscribe(msg => this.messages.push(msg));
+    this.sub = this.ws.messages().subscribe((msg) => this.messages.push(msg));
   }
 
   send(): void {
-    this.ws.sendMessage({
-      sender_id: this.senderId,
-      text: this.text
-    });
+    const t = this.text.trim();
+    if (!t) {
+      return;
+    }
+    this.ws.sendText(t);
     this.text = '';
   }
 
   ngOnDestroy(): void {
+    this.sub?.unsubscribe();
     this.ws.disconnect();
   }
 }

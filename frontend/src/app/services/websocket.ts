@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
+import { AuthService } from './auth.service';
 
-export interface ChatMessage {
-  type?: string;
-  id?: number;
-  sender_id: number;
-  sender_username?: string;
+export interface ChatPayload {
   text: string;
-  created_at?: string;
+  sender_id?: number;
+  sender_username?: string;
 }
 
 @Injectable({
@@ -15,17 +13,27 @@ export interface ChatMessage {
 })
 export class WebsocketService {
   private socket: WebSocket | null = null;
-  private messagesSubject = new Subject<ChatMessage>();
+  private readonly messagesSubject = new Subject<ChatPayload>();
+
+  constructor(private auth: AuthService) {}
 
   connect(): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return;
     }
 
-    this.socket = new WebSocket('ws://localhost:8000/ws/chat/');
+    const token = this.auth.accessToken;
+    if (!token) {
+      return;
+    }
 
-    this.socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${proto}//${window.location.host}/ws/chat/?token=${encodeURIComponent(token)}`;
+
+    this.socket = new WebSocket(url);
+
+    this.socket.onmessage = (event: MessageEvent) => {
+      const data = JSON.parse(event.data as string) as ChatPayload;
       this.messagesSubject.next(data);
     };
 
@@ -34,13 +42,13 @@ export class WebsocketService {
     };
   }
 
-  sendMessage(message: ChatMessage): void {
+  sendText(text: string): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify(message));
+      this.socket.send(JSON.stringify({ text }));
     }
   }
 
-  messages(): Observable<ChatMessage> {
+  messages(): Observable<ChatPayload> {
     return this.messagesSubject.asObservable();
   }
 

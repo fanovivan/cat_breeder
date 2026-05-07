@@ -1,69 +1,59 @@
-from channels.db import database_sync_to_async
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+import json
 
-from breeders.models import Breeder
+from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
+
 from .models import Message
 
 
-class ChatConsumer(AsyncJsonWebsocketConsumer):
-    group_name = 'global_chat'
+@database_sync_to_async
+def persist_message(sender_id, text):
+    return Message.objects.create(sender_id=sender_id, text=text)
+
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    room_group_name = "chat_breeders"
 
     async def connect(self):
-        user = self.scope.get('user')
-        if not user or not user.is_authenticated:
-            await self.close()
+        user = self.scope.get("user")
+        if isinstance(user, AnonymousUser) or not getattr(user, "is_authenticated", False):
+            await self.close(code=4001)
             return
 
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        self.user = user
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-    async def receive_json(self, content, **kwargs):
-        sender_id = content.get('sender_id')
-        text = (content.get('text') or '').strip()
-
-        if not sender_id or not text:
-            await self.send_json({'type': 'error', 'message': 'sender_id и text обязательны'})
+    async def receive(self, text_data):
+        payload = json.loads(text_data)
+        text = (payload.get("text") or "").strip()
+        if not text:
             return
 
-        sender = await self.get_sender(sender_id)
-        if sender is None:
-            await self.send_json({'type': 'error', 'message': 'Пользователь не найден'})
-            return
-
-        message = await self.save_message(sender, text)
+        await persist_message(self.user.pk, text)
 
         await self.channel_layer.group_send(
-            self.group_name,
+            self.room_group_name,
             {
-                'type': 'chat.message',
-                'id': message.id,
-                'sender_id': sender.id,
-                'sender_username': sender.username,
-                'text': message.text,
-                'created_at': message.created_at.isoformat(),
-            }
+                "type": "chat.message",
+                "text": text,
+                "sender_id": self.user.pk,
+                "sender_username": self.user.get_username(),
+            },
         )
 
     async def chat_message(self, event):
-        await self.send_json({
-            'type': 'message',
-            'id': event['id'],
-            'sender_id': event['sender_id'],
-            'sender_username': event['sender_username'],
-            'text': event['text'],
-            'created_at': event['created_at'],
-        })
-
-    @database_sync_to_async
-    def get_sender(self, sender_id):
-        try:
-            return Breeder.objects.get(id=sender_id)
-        except Breeder.DoesNotExist:
-            return None
-
-    @database_sync_to_async
-    def save_message(self, sender, text):
-        return Message.objects.create(sender=sender, text=text)
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "text": event["text"],
+                    "sender_id": event["sender_id"],
+                    "sender_username": event["sender_username"],
+                }
+            )
+        )
