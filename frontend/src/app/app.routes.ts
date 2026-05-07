@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './pages/login/login.component.ts';
-import { RegisterComponent } from './pages/register/register.component.ts';
-import { CatsComponent } from './pages/cats/cats.component.ts';
-import { MessagesComponent } from './pages/messages/messages.component.ts';
+import { LoginComponent } from './pages/login/login.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { CatsComponent } from './pages/cats/cats.component';
+import { MessagesComponent } from './pages/messages/messages.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
