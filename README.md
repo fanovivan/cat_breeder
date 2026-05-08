@@ -18,8 +18,8 @@
 - Раздел сообщений по WebSocket
 
 ## Запуск в Docker
-```bashcd
-docker compose up --build
+```bash
+docker compose up -d --build
 ```
 
 После запуска:
@@ -36,7 +36,7 @@ docker compose up --build
 - GET `/api/messages/`
 
 ## WebSocket
-- `ws://localhost:8000/ws/chat/`
+- `ws://localhost:8000/ws/chat/?token=<access_token>`
 
 ## Локальная разработка
 ### Backend
@@ -53,5 +53,27 @@ python manage.py runserver
 ```bash
 cd frontend
 npm install
-ng serve
+npm start
 ```
+
+## Деплой на VPS (домен + SSL)
+1. Купите домен у любого регистратора и создайте `A`-запись на IP сервера.
+2. На сервере установите nginx и certbot:
+   ```bash
+   sudo apt update
+   sudo apt install -y nginx certbot python3-certbot-nginx
+   ```
+3. Скопируйте nginx-конфиг из репозитория:
+   ```bash
+   sudo cp deploy/nginx/cat-breeder-remote.conf /etc/nginx/sites-available/cat-breeder
+   sudo ln -sf /etc/nginx/sites-available/cat-breeder /etc/nginx/sites-enabled/
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+4. Выпустите сертификат Let's Encrypt:
+   ```bash
+   sudo certbot --nginx -d your-domain.ru -d www.your-domain.ru
+   ```
+5. В backend-переменных укажите домен:
+   - `ALLOWED_HOSTS=your-domain.ru,www.your-domain.ru`
+   - `CORS_ALLOWED_ORIGINS=https://your-domain.ru,https://www.your-domain.ru`
+   - `CSRF_TRUSTED_ORIGINS=https://your-domain.ru,https://www.your-domain.ru`

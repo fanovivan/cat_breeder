@@ -1,8 +1,6 @@
 from urllib.parse import parse_qs
 
 from channels.db import database_sync_to_async
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import AccessToken
 
 
 @database_sync_to_async
@@ -23,6 +21,8 @@ class JWTWebsocketMiddleware:
 
     async def __call__(self, scope, receive, send):
         from django.contrib.auth.models import AnonymousUser
+        from rest_framework_simplejwt.exceptions import TokenError
+        from rest_framework_simplejwt.tokens import AccessToken
 
         if scope["type"] != "websocket":
             return await self.inner(scope, receive, send)
