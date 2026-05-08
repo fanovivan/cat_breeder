@@ -19,6 +19,7 @@
 
 ## Запуск в Docker
 ```bash
+cp .env.example .env
 docker compose up -d --build
 ```
 
@@ -41,12 +42,13 @@ docker compose up -d --build
 ## Локальная разработка
 ### Backend
 ```bash
-cd backend
+cd .
 python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+source venv/bin/activate  # Linux/macOS
+# .\venv\Scripts\Activate.ps1  # Windows PowerShell
+pip install -r backend/requirements.txt
 python manage.py migrate
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 ```
 
 ### Frontend
@@ -77,3 +79,7 @@ npm start
    - `ALLOWED_HOSTS=your-domain.ru,www.your-domain.ru`
    - `CORS_ALLOWED_ORIGINS=https://your-domain.ru,https://www.your-domain.ru`
    - `CSRF_TRUSTED_ORIGINS=https://your-domain.ru,https://www.your-domain.ru`
+6. Перезапустите контейнеры после правок `.env`:
+   ```bash
+   docker compose up -d --build backend frontend
+   ```
